@@ -6,12 +6,18 @@ header ("Access-Control-Allow-Origin: *");
 <body>
 
 <?php
-$data   = $_GET['data'];
-$param  = $_GET['param'];
-$file   = $_GET['file'];
-$mode   = $_GET['mode'];
-$echo   = $_GET['echo'];
+$data   = "";
+$param  = "";
+$file   = "";
+$mode   = "";
+$echo   = "";
 $header = "";
+
+if (isset($_GET['data' ])) $data  = $_GET['data'];
+if (isset($_GET['param'])) $param = $_GET['param'];
+if (isset($_GET['file' ])) $file  = $_GET['file'];
+if (isset($_GET['mode' ])) $mode  = $_GET['mode'];
+if (isset($_GET['echo' ])) $echo  = $_GET['echo'];
 
 function check_crlf ($str) {
   if ($str == "") return 0;
@@ -65,7 +71,7 @@ if ($mode == "") {
    $file?[echo=[0|1*]&amp;]mode=[a|w|d|l|t|z]&amp;file=[file_name][.txt|.csv]&amp;data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&amp;param=[name1;name2;...]
 
  Functions:
- - Display of operations :
+ - Display of operations :
      echo = [0|1*]
      $file?echo=0&amp;...
 
