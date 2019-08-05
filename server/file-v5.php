@@ -55,14 +55,14 @@ check_crlf ($mode);
 check_crlf ($echo);
 check_crlf ($param);
 
-$fmt  = '$';  // caractère de formatage
+$fmt  = '$';  // caractÃ¨re de formatage
 $fmtu = urlencode ($fmt);  // %24 = "$"
 
 if ($echo == "") $echo = "1";
 
 if ($mode == "") {
   $file = basename (__FILE__);
-  echo "Program for recording data in text format (.TXT et .CSV).
+  echo "Program for recording data in text format (.TXT and .CSV).
  URL Command :
    $file?[echo=[0|1*]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
 
