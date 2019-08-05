@@ -66,7 +66,7 @@ if ($echo == "") $echo = "1";
 
 if ($mode == "") {
   $file = basename (__FILE__);
-  echo "<pre>Program for recording data in text format (.TXT et .CSV).
+  echo "<pre>Program for recording data in text format (.TXT and .CSV).
  URL Command :
    $file?[echo=[0|1*]&amp;]mode=[a|w|d|l|t|z]&amp;file=[file_name][.txt|.csv]&amp;data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&amp;param=[name1;name2;...]
 
