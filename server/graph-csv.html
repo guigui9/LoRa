@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<head>  <!-- Test Ok with Google Chrome 76, Firefox 68, Opera 62, IE 11 -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.5/jquery.csv.min.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script language="javascript" type="text/javascript">
+function findGetParameter (parameterName, def) {
+  var items = location.search.substr (1).split ("&");
+  for (var index = 0; index < items.length; index++) {
+    var tmp = items[index].split ("=");
+    if (tmp[0] === parameterName)
+      return decodeURIComponent (tmp[1]);
+  }
+  return def;
+}
+
+function parseValue (value, def) {
+  // Only try to parse dates that include a '.' or '/' or '-' or ':'
+  if (typeof value == "string") {
+    if (!(value = value.trim ())) return def;
+    if (value.match (/(\.|\/|\-|\:)/g)) {
+      const date = new Date (Date.parse (value));
+      if (date != 'Invalid Date')
+        return date;
+    }
+  }
+  var f = Number.parseFloat (value);
+  if (Number.isNaN (f))
+    return value;
+  return f;
+}
+
+function drawVisualization () {
+  $.get (file, function (csvString) {
+    // transform the CSV string into a 2-dimensional array
+    var arrayData = $.csv.toArrays (csvString, { separator: sep, delimiter: delim } );
+
+    for (var i = 0; i < arrayData.length; i++) {  // Field names on the first line
+      var item = arrayData[i];
+      var last = item.length - 1;
+      if (!(item[last].trim ())) arrayData[i].pop ();  // Remove the last empty value
+      if (arrayData[i].length > arrayData[0].length)  // Delete excess data
+        arrayData[i] = arrayData[i].slice (0, arrayData[0].length - 1);
+      if (arrayData[i].length < arrayData[0].length)  // Delete incomplete data
+        arrayData.splice (i--, 1);
+      for (var j = 0; j < arrayData[i].length; j++) {
+        if (typeof arrayData[i][j] == "string") arrayData[i][j] = (arrayData[i][j]).trim ();
+        if (!arrayData[i][j])  // Fix the empty value
+          arrayData[i][j] = (i > 1) ? arrayData[i-1][j] : 0;
+        arrayData[i][j] = parseValue (arrayData[i][j], 0);
+      }
+    }
+
+    // this new DataTable object holds all the data
+    var data = new google.visualization.arrayToDataTable (arrayData);
+
+    var chart = new google.visualization.ChartWrapper ( {
+      chartType: 'LineChart',
+      containerId: 'chart_div',
+      dataTable: data,
+      options: {
+        title: ttl,
+        titleTextStyle: { color: 'grey', fontSize: 24 },
+        curveType: 'function',
+        width: 1024, height: 768,
+        pointSize: 3
+      }
+    } );
+    chart.draw ();
+  } );
+}
+</script>
+</head>
+
+<body>
+<script language="javascript" type="text/javascript">
+file  = findGetParameter ("csv", null);
+sep   = findGetParameter ("sep", ";");
+delim = findGetParameter ("dlm", '"');
+ttl   = findGetParameter ("ttl", "CSV data (" + file + ")");
+
+if (file != null) {
+  google.charts.load ('current', { packages: ['corechart', 'line'] } );
+  google.setOnLoadCallback (drawVisualization);
+  if (!Number.parseFloat) Number.parseFloat = window.parseFloat;  // for IE
+  if (!Number.isNaN) Number.isNaN = function (any) { return typeof any === 'number' && isNaN (any); }  // for IE
+  } else document.write ("<pre>Documentation\n\nFull address:\n" +
+      "  http://[your_server]" + window.location.pathname + "?csv=[URL]your_file" +
+      "[&amp;sep=;][&amp;dlm=\"][&amp;ttl=your_title]\n\nParameters:\n" +
+      "  csv : Your CSV file\n  sep : Value separator  (default = ;)\n" +
+      "  dlm : String delimiter (default = \")\n" +
+      "  ttl : Page title       (default = CSV data (filename.csv))\n\n" +
+      "Special characters:\n  ;  = %3B\n  ,  = %2C\n  \"  = %22\n  '  = %27\n" +
+      "  |  = %7C\n  #  = %23\n  tab   = %09\n  space = %20</pre>");
+</script>
+<center><div id="chart_div"></div></center>
+</body>
+</html>
