@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<head>  <!-- Test Ok with Google Chrome 76, Firefox 68, Opera 62, IE 11 -->
+<head>  <!-- Test Ok with Google Chrome 76, Firefox 68, Opera 62, IE 11, Edge 77 -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<style type="text/css"> div a img { display: none; } </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.5/jquery.csv.min.js"></script>
 <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -18,18 +19,18 @@ function findGetParameter (parameterName, def) {
 }
 
 function parseValue (value, def) {
-  // Only try to parse dates that include a '.' or '/' or '-' or ':'
-  if (typeof value == "string") {
+  if (value.trim) {
     if (!(value = value.trim ())) return def;
+    // Only try to parse dates that include a  '.'  '/'  '-'  ':'
     if (value.match (/(\.|\/|\-|\:)/g)) {
-      const date = new Date (Date.parse (value));
+      var date = new Date (Date.parse (value));
       if (date != 'Invalid Date')
         return date;
     }
   }
   var f = Number.parseFloat (value);
   if (Number.isNaN (f))
-    return value;
+    return (value.trim) ? def : value;
   return f;
 }
 
@@ -41,22 +42,21 @@ function drawVisualization () {
     for (var i = 0; i < arrayData.length; i++) {  // Field names on the first line
       var item = arrayData[i];
       var last = item.length - 1;
-      if (!(item[last].trim ())) arrayData[i].pop ();  // Remove the last empty value
+      if (!item[last].trim ()) arrayData[i].pop ();  // Remove the last empty value
       if (arrayData[i].length > arrayData[0].length)  // Delete excess data
         arrayData[i] = arrayData[i].slice (0, arrayData[0].length - 1);
       if (arrayData[i].length < arrayData[0].length)  // Delete incomplete data
         arrayData.splice (i--, 1);
       for (var j = 0; j < arrayData[i].length; j++) {
-        if (typeof arrayData[i][j] == "string") arrayData[i][j] = (arrayData[i][j]).trim ();
-        if (!arrayData[i][j])  // Fix the empty value
-          arrayData[i][j] = (i > 1) ? arrayData[i-1][j] : 0;
-        arrayData[i][j] = parseValue (arrayData[i][j], 0);
+        if (arrayData[i][j].trim) arrayData[i][j] = (arrayData[i][j]).trim ();
+        var prev = (i > 1) ? arrayData[i-1][j] : 0;
+        if (!arrayData[i][j]) arrayData[i][j] = prev;  // Fix the empty value
+        if (i > 0) arrayData[i][j] = parseValue (arrayData[i][j], prev);
       }
     }
 
     // this new DataTable object holds all the data
-    var data = new google.visualization.arrayToDataTable (arrayData);
-
+    var data  = new google.visualization.arrayToDataTable (arrayData);
     var chart = new google.visualization.ChartWrapper ( {
       chartType: 'LineChart',
       containerId: 'chart_div',
@@ -77,12 +77,12 @@ function drawVisualization () {
 
 <body>
 <script language="javascript" type="text/javascript">
-file  = findGetParameter ("csv", null);
+file  = findGetParameter ("csv", "" );
 sep   = findGetParameter ("sep", ";");
 delim = findGetParameter ("dlm", '"');
 ttl   = findGetParameter ("ttl", "CSV data (" + file + ")");
 
-if (file != null) {
+if (file != "") {
   google.charts.load ('current', { packages: ['corechart', 'line'] } );
   google.setOnLoadCallback (drawVisualization);
   if (!Number.parseFloat) Number.parseFloat = window.parseFloat;  // for IE
