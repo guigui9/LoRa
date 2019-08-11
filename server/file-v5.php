@@ -6,7 +6,7 @@ $data   = "";
 $param  = "";
 $file   = "";
 $mode   = "";
-$echo   = "";
+$echo   = "0";
 $header = "";
 
 if (isset($_GET['data' ])) $data  = $_GET['data'];
@@ -58,17 +58,15 @@ check_crlf ($param);
 $fmt  = '$';  // caractère de formatage
 $fmtu = urlencode ($fmt);  // %24 = "$"
 
-if ($echo == "") $echo = "1";
-
 if ($mode == "") {
   $file = basename (__FILE__);
   echo "Program for recording data in text format (.TXT and .CSV).
  URL Command :
-   $file?[echo=[0|1*]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
+   $file?[echo=[0*|1]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
 
  Functions:
  - Display of operations :
-     echo = [0|1*]
+     echo = [0*|1]
      $file?echo=0&...
 
  - Add data :
