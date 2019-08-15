@@ -139,7 +139,7 @@ if ($mode == "") {
                 if ($pos !== false)
                   $value = substr ($value, 0, $pos) . "Z";
               }
-            $data = $data . $value . ";";
+            $data = $data . trim ($value, ";") . ";";
           }
         } else {
           $data = $header;
