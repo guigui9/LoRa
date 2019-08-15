@@ -6,7 +6,7 @@ $data   = "";
 $param  = "";
 $file   = "";
 $mode   = "";
-$echo   = "0";
+$echo   = "";
 $header = "";
 
 if (isset($_GET['data' ])) $data  = $_GET['data'];
@@ -58,15 +58,17 @@ check_crlf ($param);
 $fmt  = '$';  // caractère de formatage
 $fmtu = urlencode ($fmt);  // %24 = "$"
 
+if ($echo == "") $echo = "1";
+
 if ($mode == "") {
   $file = basename (__FILE__);
-  echo "Program for recording data in text format (.TXT and .CSV).
+  echo "Program for recording data in text format (.TXT et .CSV).
  URL Command :
-   $file?[echo=[0*|1]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
+   $file?[echo=[0|1*]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
 
  Functions:
  - Display of operations :
-     echo = [0*|1]
+     echo = [0|1*]
      $file?echo=0&...
 
  - Add data :
@@ -122,32 +124,39 @@ if ($mode == "") {
         $header = file_get_contents ('php://input');
         if ($param != "") {
           $data = "";
-          if (($mode == "w") or (file_exists ($file) == False))
+          if (($mode == "w") or !file_exists ($file))
             $data = $param . "\r\n";
 
           $names = explode (";", $param);
           foreach ($names as $name) {
             $value = getparam ($header, $name, " ");
+            //if (strpos ($value, ";") !== false) $value = '"' . $value . '"';
             if ($name == "payload_raw")
-              $value = '"' . base64_decode ($value) . '"';
+              $value = base64_decode ($value);
+            if ($name == "time")  // remove nanosecond : 2019-08-11T11:40:36.578885446Z
+              if (substr ($value, -1) == "Z") {
+                $pos = strrpos ($value, ".");
+                if ($pos !== false)
+                  $value = substr ($value, 0, $pos) . "Z";
+              }
             $data = $data . $value . ";";
           }
-          $data = $data . "\r\n";
         } else {
           $data = $header;
           $data = str_replace ("\r\n\r\n", " ", $data);
           $data = str_replace ("\r\n"    , " ", $data);
           $data = str_replace ("\r"      , " ", $data);
           $data = str_replace ("\n"      , " ", $data);
-          $data = $data . "\r\n";
         }
+        $data = trim ($data, ';');
+        $data = $data . "\r\n";
       } else {
-
         //$data = urldecode ($data);
         $date_ = date ("Y-m-d");  // 2019-04-14
         $time_ = date ("H:i:s");  // 18:09:35
         $gmt_  = substr_replace (date ("O"), ":", -2, 0);  // format ISO 8601 : +0200 ==> +02:00
         $timez = gmdate ("Y-m-d")."T".gmdate ("H:i:s")."Z";
+        $data = trim ($data, ';');
         $data = str_replace ($fmt."D", $date_                 , $data);
         $data = str_replace ($fmt."T", $time_                 , $data);
         $data = str_replace ($fmt."C", $date_."T".$time_.$gmt_, $data);
