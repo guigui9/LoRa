@@ -18,11 +18,17 @@ function findGetParameter (parameterName, def) {
   return def;
 }
 
+function trim (s, c) {
+  if (c === "]") c = "\\]";
+  if (c === "\\") c = "\\\\";
+  return s.replace (new RegExp ("^[" + c + "]+|[" + c + "]+$", "g"), "");
+}
+
 function parseValue (value, def) {
   if (value.trim) {
     if (!(value = value.trim ())) return def;
-    // Only try to parse dates that include a  '.'  '/'  '-'  ':'
-    if (value.match (/(\.|\/|\-|\:)/g)) {
+    // Only try to parse dates that include a  '/'  '-'  ':'
+    if (value.match (/(\/|\-|\:)/g)) {
       var date = new Date (Date.parse (value));
       if (date != 'Invalid Date')
         return date;
@@ -39,7 +45,17 @@ function drawVisualization () {
     // transform the CSV string into a 2-dimensional array
     var arrayData = $.csv.toArrays (csvString, { separator: sep, delimiter: delim } );
 
-    for (var i = 0; i < arrayData.length; i++) {  // Field names on the first line
+    var start = 0;
+    if (names != "") {
+      names = trim (names, sep);
+      names = names.split (sep);
+      if (names.length) {
+        start = 1;
+        arrayData[0] = names.slice ();
+      }
+    }
+
+    for (var i = start; i < arrayData.length; i++) {  // Field names on the first line
       var item = arrayData[i];
       var last = item.length - 1;
       if (!item[last].trim ()) arrayData[i].pop ();  // Remove the last empty value
@@ -52,7 +68,7 @@ function drawVisualization () {
         var prev = (i > 1) ? arrayData[i-1][j] : 0;
         if (!arrayData[i][j]) arrayData[i][j] = prev;  // Fix the empty value
         if (i > 0) arrayData[i][j] = parseValue (arrayData[i][j], prev);
-      }
+      }  // console.log (arrayData[i]);
     }
 
     // this new DataTable object holds all the data
@@ -81,6 +97,7 @@ file  = findGetParameter ("csv", "" );
 sep   = findGetParameter ("sep", ";");
 delim = findGetParameter ("dlm", '"');
 ttl   = findGetParameter ("ttl", "CSV data (" + file + ")");
+names = findGetParameter ("names", "");
 
 if (file != "") {
   google.charts.load ('current', { packages: ['corechart', 'line'] } );
@@ -90,9 +107,10 @@ if (file != "") {
   } else document.write ("<pre>Documentation\n\nFull address:\n" +
       "  http://[your_server]" + window.location.pathname + "?csv=[URL]your_file" +
       "[&amp;sep=;][&amp;dlm=\"][&amp;ttl=your_title]\n\nParameters:\n" +
-      "  csv : Your CSV file\n  sep : Value separator  (default = ;)\n" +
-      "  dlm : String delimiter (default = \")\n" +
-      "  ttl : Page title       (default = CSV data (filename.csv))\n\n" +
+      "  csv   : Your CSV file\n  sep : Value separator  (default = ;)\n" +
+      "  dlm   : String delimiter (default = \")\n" +
+      "  names : Field names      (default = first line)\n" +
+      "  ttl   : Page title       (default = CSV data (filename.csv))\n\n" +
       "Special characters:\n  ;  = %3B\n  ,  = %2C\n  \"  = %22\n  '  = %27\n" +
       "  |  = %7C\n  #  = %23\n  tab   = %09\n  space = %20</pre>");
 </script>
