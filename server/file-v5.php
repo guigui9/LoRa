@@ -58,17 +58,17 @@ check_crlf ($param);
 $fmt  = '$';  // caractère de formatage
 $fmtu = urlencode ($fmt);  // %24 = "$"
 
-if ($echo == "") $echo = "1";
+if ($echo == "") $echo = "0";
 
 if ($mode == "") {
   $file = basename (__FILE__);
   echo "Program for recording data in text format (.TXT et .CSV).
  URL Command :
-   $file?[echo=[0|1*]&]mode=[a|w|d|l|t|z]&file=[file_name][.txt|.csv]&data=[[".$fmt."C;]10;20;...[".$fmt."N]]|json&param=[name1;name2;...]
+   $file?[echo=0|1][&mode=a|w|d|l|t|z][&file=file_name[.txt|.csv]][&data=[".$fmt."C;]10;20;...[".$fmt."N]|json][&param=name1;name2;...]
 
  Functions:
  - Display of operations :
-     echo = [0|1*]
+     echo = 0|1 (default = 0)
      $file?echo=0&...
 
  - Add data :
@@ -131,14 +131,17 @@ if ($mode == "") {
           foreach ($names as $name) {
             $value = getparam ($header, $name, " ");
             //if (strpos ($value, ";") !== false) $value = '"' . $value . '"';
+
             if ($name == "payload_raw")
               $value = base64_decode ($value);
+
             if ($name == "time")  // remove nanosecond : 2019-08-11T11:40:36.578885446Z
               if (substr ($value, -1) == "Z") {
                 $pos = strrpos ($value, ".");
                 if ($pos !== false)
                   $value = substr ($value, 0, $pos) . "Z";
               }
+
             $data = $data . trim ($value, ";") . ";";
           }
         } else {
@@ -148,7 +151,7 @@ if ($mode == "") {
           $data = str_replace ("\r"      , " ", $data);
           $data = str_replace ("\n"      , " ", $data);
         }
-        $data = trim ($data, ';');
+        $data = trim ($data, ";");
         $data = $data . "\r\n";
       } else {
         //$data = urldecode ($data);
