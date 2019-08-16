@@ -71,6 +71,13 @@ function drawVisualization () {
       }  // console.log (arrayData[i]);
     }
 
+    for (var i = 0; i < arrayData[0].length; i++)
+      if (arrayData[0][i].charAt (0) == "-") {
+        for (var j = 0; j < arrayData.length; j++)
+          arrayData[j].splice (i, 1);
+        i--;
+      }
+
     // this new DataTable object holds all the data
     var data  = new google.visualization.arrayToDataTable (arrayData);
     var chart = new google.visualization.ChartWrapper ( {
@@ -109,7 +116,7 @@ if (file != "") {
       "[&amp;sep=;][&amp;dlm=\"][&amp;ttl=your_title]\n\nParameters:\n" +
       "  csv   : Your CSV file\n  sep : Value separator  (default = ;)\n" +
       "  dlm   : String delimiter (default = \")\n" +
-      "  names : Field names      (default = first line)\n" +
+      "  names : Name the fields  (default = first line); the minus sign \"-\" in front of the name removes the data.\n" +
       "  ttl   : Page title       (default = CSV data (filename.csv))\n\n" +
       "Special characters:\n  ;  = %3B\n  ,  = %2C\n  \"  = %22\n  '  = %27\n" +
       "  |  = %7C\n  #  = %23\n  tab   = %09\n  space = %20</pre>");
