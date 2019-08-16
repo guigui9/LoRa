@@ -226,7 +226,7 @@ void loop() {
 }
 
 float count;
-float getSinus() { return 20.0 + sin (count++ / 11.0); }
+float getSinus () { return 20.0 + sin (count++ / 11.0); }
 
 void floatToStr (float f) {
   dtostrf (f, -5, 1, (char*)mydata);
@@ -235,11 +235,11 @@ void floatToStr (float f) {
 
 float getInternalTemp () {
   unsigned int wADC;
-  ADMUX = (_BV(REFS1) | _BV(REFS0) | _BV(MUX3));
-  ADCSRA |= _BV(ADEN);  // enable the ADC
-  delay(20);  // wait for voltages to become stable.
-  ADCSRA |= _BV(ADSC);  // Start the ADC
-  while (bit_is_set(ADCSRA,ADSC));  // Detect end-of-conversion
+  ADMUX = (_BV (REFS1) | _BV (REFS0) | _BV (MUX3));
+  ADCSRA |= _BV (ADEN);  // enable the ADC
+  delay (20);  // wait for voltages to become stable.
+  ADCSRA |= _BV (ADSC);  // Start the ADC
+  while (bit_is_set (ADCSRA, ADSC));  // Detect end-of-conversion
   wADC = ADCW;  // Reading register "ADCW" takes care of how to read ADCL and ADCH.
-  return (wADC - 324.31 ) / 1.22 + 12.0;
+  return (wADC - 324.31 ) / 1.22 + 12.0;  // Add offset
 }
